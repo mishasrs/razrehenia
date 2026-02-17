@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial, sans-serif; padding: 12px; }
+      h3 { margin: 0 0 10px; }
+      .box { border: 1px solid #ddd; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+      .row { display:flex; gap:8px; align-items:center; }
+      .muted { color:#666; font-size:12px; }
+      .list { max-height: 220px; overflow:auto; border-top:1px solid #eee; margin-top:8px; padding-top:8px; }
+      button { padding: 8px 12px; border:0; border-radius:10px; cursor:pointer; }
+      button.primary { background:#111827; color:#fff; }
+      button:disabled { opacity: .6; cursor: default; }
+      .ok { color: #065f46; }
+      .err { color: #991b1b; }
+      label { cursor:pointer; }
+      .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; background:#f3f4f6; color:#111827; }
+    </style>
+  </head>
+  <body>
+    <h3>Отправка в Telegram</h3>
+
+    <div class="box">
+      <div class="row">
+        <label><input type="checkbox" id="withPdf" checked> Прикреплять PDF</label>
+      </div>
+      <div class="row" style="margin-top:6px;">
+        <label><input type="checkbox" id="withQr" checked> Отправлять QR</label>
+      </div>
+      <div class="muted" style="margin-top:6px;">
+        Источник: выделение на листе "Витрина" или "Разрешения".
+      </div>
+    </div>
+
+    <div class="box">
+      <b>Файлы (из выделения):</b>
+      <div class="list" id="files"><span class="muted">Загрузка...</span></div>
+    </div>
+
+    <div class="box">
+      <div class="row" style="justify-content:space-between;">
+        <b>Получатели:</b>
+        <a href="#" onclick="toggleActive(true);return false;" class="muted">Выбрать активных</a>
+      </div>
+      <div class="list" id="contacts"></div>
+      <div class="muted" style="margin-top:6px;">
+        chat_id берём через: Разрешения → Telegram → "Синхронизировать chat_id..."
+      </div>
+    </div>
+
+    <div class="row" style="gap:10px;">
+      <button class="primary" id="sendBtn" onclick="send()" disabled>Отправить</button>
+      <span id="status" class="muted"></span>
+    </div>
+
+    <div id="result" style="margin-top:10px;"></div>
+
+    <script>
+      let DATA = { files: [], contacts: [] };
+
+      function boot() {
+        setStatus('Загружаю данные...');
+        google.script.run
+          .withSuccessHandler((res) => {
+            DATA = res || { files: [], contacts: [] };
+            render();
+            document.getElementById('sendBtn').disabled = false;
+            setStatus('');
+          })
+          .withFailureHandler((err) => {
+            setStatus((err && err.message) ? err.message : String(err), true);
+          })
+          .tgGetSidebarData();
+      }
+
+      function render() {
+        const filesBox = document.getElementById('files');
+        filesBox.innerHTML = '';
+
+        (DATA.files || []).forEach((f, idx) => {
+          const id = 'f_' + idx;
+          const title = (f.fileName || '(без имени)') + ' — ТС: ' + (f.ts || '-') + ' — До: ' + (f.until || '-');
+          const src = f.sourceSheet ? ('<span class="pill">' + escapeHtml(f.sourceSheet) + '</span>') : '';
+          filesBox.insertAdjacentHTML('beforeend', `
+            <div class="row" style="margin-bottom:6px;">
+              <label style="flex:1;">
+                <input type="checkbox" id="${id}" checked>
+                ${escapeHtml(title)} ${src}
+              </label>
+            </div>
+          `);
+        });
+
+        if (!(DATA.files || []).length) {
+          filesBox.innerHTML = '<div class="muted">Файлы не найдены (возможно, кэш пуст). Закройте и откройте сайдбар заново.</div>';
+        }
+
+        const contactsBox = document.getElementById('contacts');
+        contactsBox.innerHTML = '';
+        const contacts = DATA.contacts || [];
+        if (!contacts.length) {
+          contactsBox.innerHTML = '<div class="muted">Лист "Контакты" пуст. Сначала получите chat_id через getUpdates.</div>';
+          return;
+        }
+
+        contacts.forEach((c, idx) => {
+          const id = 'c_' + idx;
+          contactsBox.insertAdjacentHTML('beforeend', `
+            <div class="row" style="margin-bottom:6px;">
+              <label style="flex:1;">
+                <input type="checkbox" id="${id}" ${c.active ? 'checked' : ''}>
+                ${escapeHtml(c.name || '(без имени)')} <span class="muted">(${escapeHtml(c.chatId || '')}${c.role ? ', ' + escapeHtml(c.role) : ''})</span>
+              </label>
+            </div>
+          `);
+        });
+      }
+
+      function toggleActive(v) {
+        (DATA.contacts || []).forEach((c, idx) => {
+          const el = document.getElementById('c_' + idx);
+          if (el) el.checked = !!c.active && v;
+        });
+      }
+
+      function selectedFiles() {
+        const out = [];
+        (DATA.files || []).forEach((f, idx) => {
+          const el = document.getElementById('f_' + idx);
+          if (el && el.checked) out.push(f);
+        });
+        return out;
+      }
+
+      function selectedChatIds() {
+        const out = [];
+        (DATA.contacts || []).forEach((c, idx) => {
+          const el = document.getElementById('c_' + idx);
+          if (el && el.checked && c.chatId) out.push(String(c.chatId));
+        });
+        return out;
+      }
+
+      function send() {
+        const files = selectedFiles();
+        const chatIds = selectedChatIds();
+        const withPdf = document.getElementById('withPdf').checked;
+        const withQr = document.getElementById('withQr').checked;
+
+        if (!files.length) return setStatus('Выберите хотя бы один файл.', true);
+        if (!chatIds.length) return setStatus('Выберите хотя бы одного получателя.', true);
+        if (!withPdf && !withQr) return setStatus('Нечего отправлять: включите PDF или QR.', true);
+
+        setBusy(true);
+        setStatus('Отправляю...');
+
+        google.script.run
+          .withSuccessHandler(res => {
+            setBusy(false);
+            setStatus('Готово.', false);
+            renderResult(res);
+          })
+          .withFailureHandler(err => {
+            setBusy(false);
+            setStatus(err && err.message ? err.message : String(err), true);
+          })
+          .tgSendFromUi({ files, chatIds, withPdf, withQr });
+      }
+
+      function setBusy(v) {
+        document.getElementById('sendBtn').disabled = !!v;
+      }
+
+      function setStatus(msg, isErr=false) {
+        const el = document.getElementById('status');
+        el.textContent = msg || '';
+        el.className = isErr ? 'err' : 'muted';
+      }
+
+      function renderResult(res) {
+        const el = document.getElementById('result');
+        const errs = (res && res.sampleErrors && res.sampleErrors.length)
+          ? `<div class="err"><b>Ошибки (пример):</b><br>${res.sampleErrors.map(e => escapeHtml(e)).join('<br>')}</div>`
+          : '';
+        el.innerHTML = `
+          <div class="ok"><b>Отправлено документов:</b> ${(res && res.sentDocs) || 0}</div>
+          <div class="ok"><b>Отправлено сообщений:</b> ${(res && res.sentMsgs) || 0}</div>
+          <div class="${((res && res.errors) || 0) ? 'err' : 'muted'}"><b>Ошибок:</b> ${(res && res.errors) || 0}</div>
+          ${errs}
+        `;
+      }
+
+      function escapeHtml(s){
+        return String(s||'')
+          .replace(/&/g,'&amp;')
+          .replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;');
+      }
+
+      boot();
+    </script>
+  </body>
+</html>
