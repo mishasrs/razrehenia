@@ -141,8 +141,10 @@ function fillMissingQr() {
     }
 
     const num = lastRow - 1;
-    const values = sh.getRange(2, 1, num, COL_UPDATED).getValues();
+    const fileIds = sh.getRange(2, COL_FILE_ID, num, 1).getValues();
+    const qrVals = sh.getRange(2, COL_QR, num, 1).getValues();
     const qrRT   = sh.getRange(2, COL_QR, num, 1).getRichTextValues();
+    const updatedVals = sh.getRange(2, COL_UPDATED, num, 1).getValues();
 
     let processed = 0;
     let filled = 0;
@@ -151,10 +153,10 @@ function fillMissingQr() {
       if (shouldStop_()) break;
 
       const rowIndex = i + 2;
-      const fileId = (values[i][COL_FILE_ID - 1] || '').toString().trim();
+      const fileId = (fileIds[i][0] || '').toString().trim();
       if (!fileId) continue;
 
-      const qrVal = (values[i][COL_QR - 1] || '').toString().trim();
+      const qrVal = (qrVals[i][0] || '').toString().trim();
       const qrLink = qrRT[i][0] ? (qrRT[i][0].getLinkUrl() || '') : '';
       if (qrVal || qrLink) continue; // уже есть
 
@@ -173,15 +175,16 @@ function fillMissingQr() {
       if (!qrUrl) continue;
 
       // ставим значение + ссылку
-      values[i][COL_QR - 1] = 'QR';
-      values[i][COL_UPDATED - 1] = new Date();
+      qrVals[i][0] = 'QR';
+      updatedVals[i][0] = new Date();
       qrRT[i][0] = SpreadsheetApp.newRichTextValue().setText('QR').setLinkUrl(qrUrl).build();
       filled++;
     }
 
-    // пишем обратно
-    sh.getRange(2, 1, num, COL_UPDATED).setValues(values);
+    // пишем обратно только изменяемые колонки
+    sh.getRange(2, COL_QR, num, 1).setValues(qrVals);
     sh.getRange(2, COL_QR, num, 1).setRichTextValues(qrRT);
+    sh.getRange(2, COL_UPDATED, num, 1).setValues(updatedVals);
 
     applyDataSheetFormatting_(sh);
     refreshView_();

@@ -554,65 +554,79 @@ function tgApplyEmployeeBotCommands_(token) {
 /** ---- getUpdates sync ---- */
 function tgSyncChatIdsFromUpdates() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) {
+    log_(ss, 'TG WARN: пропуск sync, потому что уже идёт другая обработка обновлений', 'WARN');
+    return { added: 0, handled: 0, errors: 0, skipped: true };
+  }
+
   const token = PropertiesService.getScriptProperties().getProperty(PROP_TG_TOKEN);
-  if (!token) throw new Error('Не задан TELEGRAM_BOT_TOKEN.');
+  if (!token) {
+    lock.releaseLock();
+    throw new Error('Не задан TELEGRAM_BOT_TOKEN.');
+  }
+
   try {
-    tgApplyEmployeeBotCommands_(token);
-  } catch (e) {
-    log_(ss, `TG WARN setMyCommands: ${e && e.message ? e.message : e}`, 'WARN');
-  }
-
-  const props = PropertiesService.getScriptProperties();
-  const offset = props.getProperty(PROP_TG_UPD_OFFSET);
-
-  const url = `https://api.telegram.org/bot${token}/getUpdates` + (offset ? `?offset=${encodeURIComponent(offset)}` : '');
-  const resp = UrlFetchApp.fetch(url, { method: 'get', muteHttpExceptions: true });
-  const code = resp.getResponseCode();
-  if (code !== 200) throw new Error(`getUpdates HTTP ${code}: ${resp.getContentText()}`);
-
-  const json = JSON.parse(resp.getContentText() || '{}');
-  if (!json.ok) throw new Error(`getUpdates not ok: ${resp.getContentText()}`);
-
-  const updates = json.result || [];
-  if (!updates.length) {
-    toastSafe_(ss, 'Нет новых сообщений.');
-    return { added: 0, handled: 0, errors: 0 };
-  }
-
-  const sh = tgEnsureContactsSheet_(ss);
-  const contactsMap = tgBuildContactsMap_(tgListContacts_(ss));
-
-  let added = 0;
-  let handled = 0;
-  let errors = 0;
-  let maxUpdateId = 0;
-
-  for (const u of updates) {
-    const updId = u.update_id || 0;
-    if (updId > maxUpdateId) maxUpdateId = updId;
-
     try {
-      const event = tgExtractUpdateMessage_(u);
-      if (!event) continue;
-
-      let contact = contactsMap.get(event.chatId);
-      if (!contact) {
-        const name = tgPickName_(event.from, event.chat);
-        contact = tgAppendContact_(sh, name, event.chatId, TG_DEFAULT_ROLE);
-        contactsMap.set(event.chatId, contact);
-        added++;
-      }
-
-      if (tgHandleEmployeeMenuMessage_(token, event, contact)) handled++;
+      tgApplyEmployeeBotCommands_(token);
     } catch (e) {
-      errors++;
-      log_(ss, `TG BOT ERROR: ${e && e.stack ? e.stack : e}`, 'ERROR');
+      log_(ss, `TG WARN setMyCommands: ${e && e.message ? e.message : e}`, 'WARN');
     }
-  }
 
-  props.setProperty(PROP_TG_UPD_OFFSET, String(maxUpdateId + 1));
-  toastSafe_(ss, `TG: добавлено ${added}, обработано ${handled}, ошибок ${errors}`);
-  return { added, handled, errors };
+    const props = PropertiesService.getScriptProperties();
+    const offset = props.getProperty(PROP_TG_UPD_OFFSET);
+
+    const url = `https://api.telegram.org/bot${token}/getUpdates` + (offset ? `?offset=${encodeURIComponent(offset)}` : '');
+    const resp = UrlFetchApp.fetch(url, { method: 'get', muteHttpExceptions: true });
+    const code = resp.getResponseCode();
+    if (code !== 200) throw new Error(`getUpdates HTTP ${code}: ${resp.getContentText()}`);
+
+    const json = JSON.parse(resp.getContentText() || '{}');
+    if (!json.ok) throw new Error(`getUpdates not ok: ${resp.getContentText()}`);
+
+    const updates = json.result || [];
+    if (!updates.length) {
+      toastSafe_(ss, 'Нет новых сообщений.');
+      return { added: 0, handled: 0, errors: 0 };
+    }
+
+    const sh = tgEnsureContactsSheet_(ss);
+    const contactsMap = tgBuildContactsMap_(tgListContacts_(ss));
+
+    let added = 0;
+    let handled = 0;
+    let errors = 0;
+    let maxUpdateId = 0;
+
+    for (const u of updates) {
+      const updId = u.update_id || 0;
+      if (updId > maxUpdateId) maxUpdateId = updId;
+
+      try {
+        const event = tgExtractUpdateMessage_(u);
+        if (!event) continue;
+
+        let contact = contactsMap.get(event.chatId);
+        if (!contact) {
+          const name = tgPickName_(event.from, event.chat);
+          contact = tgAppendContact_(sh, name, event.chatId, TG_DEFAULT_ROLE);
+          contactsMap.set(event.chatId, contact);
+          added++;
+        }
+
+        if (tgHandleEmployeeMenuMessage_(token, event, contact)) handled++;
+      } catch (e) {
+        errors++;
+        log_(ss, `TG BOT ERROR: ${e && e.stack ? e.stack : e}`, 'ERROR');
+      }
+    }
+
+    props.setProperty(PROP_TG_UPD_OFFSET, String(maxUpdateId + 1));
+    toastSafe_(ss, `TG: добавлено ${added}, обработано ${handled}, ошибок ${errors}`);
+    return { added, handled, errors };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function tgProcessEmployeeBotUpdates() {
@@ -780,6 +794,7 @@ function tgSendFromUi(payload) {
 
   let sentDocs = 0, sentMsgs = 0, errors = 0;
   const errList = [];
+  const pdfCache = new Map();
 
   for (const chatId of chatIds) {
     for (const f of files) {
@@ -787,14 +802,7 @@ function tgSendFromUi(payload) {
         // 1) Если отправляем PDF — отправляем ОДИН документ
         // и, если включён QR, добавляем QR в caption (без отдельного сообщения)
         if (withPdf) {
-          if (!f.fileId) throw new Error(`Нет fileId для "${f.fileName || ''}" (строка ${f.rowIndex}, лист ${f.sourceSheet})`);
-
-          const file = DriveApp.getFileById(String(f.fileId));
-          const code = (f.shortCode || tgShortFileCode_(file.getName()) || 'document').trim();
-
-          const blob = file.getBlob();
-          blob.setName(code + '.pdf'); // <-- 903(4708).pdf
-
+          const blob = tgCloneBlob_(tgGetCachedPdfBlob_(pdfCache, f));
           const caption = tgBuildCaptionHtml_(f, withQr); // <-- QR внутрь caption
           tgSendDocument_(token, chatId, blob, caption);
 
@@ -819,6 +827,36 @@ function tgSendFromUi(payload) {
   }
 
   return { sentDocs, sentMsgs, errors, sampleErrors: errList.slice(0, 10) };
+}
+
+function tgGetCachedPdfBlob_(cache, fileInfo) {
+  const fileId = String(fileInfo && fileInfo.fileId || '').trim();
+  if (!fileId) {
+    throw new Error(`Нет fileId для "${fileInfo && fileInfo.fileName ? fileInfo.fileName : ''}" (строка ${fileInfo && fileInfo.rowIndex}, лист ${fileInfo && fileInfo.sourceSheet})`);
+  }
+
+  const cached = cache.get(fileId);
+  if (cached && cached.error) throw new Error(cached.error);
+  if (cached && cached.blob) return cached.blob;
+
+  try {
+    const file = DriveApp.getFileById(fileId);
+    const code = (fileInfo.shortCode || tgShortFileCode_(file.getName()) || 'document').trim();
+    const blob = file.getBlob();
+    blob.setName(code + '.pdf');
+    cache.set(fileId, { blob });
+    return blob;
+  } catch (e) {
+    const message = `Не удалось подготовить PDF "${fileInfo && fileInfo.fileName ? fileInfo.fileName : fileId}": ${e && e.message ? e.message : e}`;
+    cache.set(fileId, { error: message });
+    throw new Error(message);
+  }
+}
+
+function tgCloneBlob_(blob) {
+  if (!blob) return blob;
+  if (typeof blob.copyBlob === 'function') return blob.copyBlob();
+  return Utilities.newBlob(blob.getBytes(), blob.getContentType(), blob.getName());
 }
 
 /** ---- Telegram low-level ---- */

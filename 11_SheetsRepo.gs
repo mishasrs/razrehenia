@@ -65,10 +65,12 @@ function syncExistingRowsChunked_(ss, sh, folderIdSet, startMs) {
   const toDelete = [];
   let checked = 0;
   let updated = 0;
+  let processedRows = 0;
 
   for (let i = 0; i < num; i++) {
     if (shouldStop_()) break;
     if (timeAlmostUp_(startMs)) break;
+    processedRows = i + 1;
 
     const rowIndex = cursor + i;
     const row = values[i];
@@ -183,10 +185,12 @@ function syncExistingRowsChunked_(ss, sh, folderIdSet, startMs) {
     }
   }
 
-  // Пишем обратно (безопасно пишем всегда: могли править richtext даже при updated=0 в логике)
-  sh.getRange(cursor, 1, num, COL_UPDATED).setValues(values);
-  sh.getRange(cursor, COL_FILE, num, 1).setRichTextValues(fileRT);
-  sh.getRange(cursor, COL_QR, num, 1).setRichTextValues(qrRT);
+  // Пишем обратно только реально обработанный префикс пачки.
+  if (processedRows > 0) {
+    sh.getRange(cursor, 1, processedRows, COL_UPDATED).setValues(values.slice(0, processedRows));
+    sh.getRange(cursor, COL_FILE, processedRows, 1).setRichTextValues(fileRT.slice(0, processedRows));
+    sh.getRange(cursor, COL_QR, processedRows, 1).setRichTextValues(qrRT.slice(0, processedRows));
+  }
 
   // Удаления — снизу вверх
   let deleted = 0;
@@ -200,9 +204,10 @@ function syncExistingRowsChunked_(ss, sh, folderIdSet, startMs) {
     }
   }
 
-  // КЛЮЧЕВО: корректируем курсор, чтобы не пропускать строки после удалений
+  // КЛЮЧЕВО: корректируем курсор только на реально обработанную часть пачки,
+  // чтобы не пропускать строки при stop/timeAlmostUp внутри цикла.
   const newLast = sh.getLastRow();
-  let nextCursor = cursor + num - deleted;
+  let nextCursor = cursor + processedRows - deleted;
   if (nextCursor < 2) nextCursor = 2;
 
   let done = false;
