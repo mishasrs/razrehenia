@@ -66,9 +66,14 @@ function Add-RegexFailures {
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $policyPath = Join-Path $repoRoot 'docs/repository-sanitization.md'
+$checklistPath = Join-Path $repoRoot 'docs/public-ready-checklist.md'
 
 if (-not (Test-Path $policyPath -PathType Leaf)) {
   throw "Missing policy file: docs/repository-sanitization.md"
+}
+
+if (-not (Test-Path $checklistPath -PathType Leaf)) {
+  throw "Missing checklist file: docs/public-ready-checklist.md"
 }
 
 Push-Location $repoRoot
@@ -81,6 +86,29 @@ try {
 
   $trackedFiles = $trackedFiles | Where-Object { $_ }
   $failures = [System.Collections.Generic.List[string]]::new()
+  $requiredTrackedFiles = @(
+    'README.md',
+    'docs/repository-sanitization.md',
+    'docs/public-ready-checklist.md',
+    'docs/bootstrap-inventory.md',
+    '.clasp.example.json',
+    '.claspignore',
+    'appsscript.json'
+  )
+  $auditedTextFiles = @($trackedFiles | Where-Object { Test-TrackedTextFile -Path $_ })
+
+  foreach ($requiredPath in $requiredTrackedFiles) {
+    $fullRequiredPath = Join-Path $repoRoot $requiredPath
+
+    if (-not (Test-Path $fullRequiredPath -PathType Leaf)) {
+      Add-Failure -Failures $failures -Message "Missing proof artifact: $requiredPath"
+      continue
+    }
+
+    if ($trackedFiles -notcontains $requiredPath) {
+      Add-Failure -Failures $failures -Message "Proof artifact must stay tracked: $requiredPath"
+    }
+  }
 
   if ($trackedFiles -contains '.clasp.json') {
     Add-Failure -Failures $failures -Message "Tracked .clasp.json detected. Keep the live binding local and use .clasp.example.json only as the public template."
@@ -145,11 +173,7 @@ try {
     }
   )
 
-  foreach ($relativePath in $trackedFiles) {
-    if (-not (Test-TrackedTextFile -Path $relativePath)) {
-      continue
-    }
-
+  foreach ($relativePath in $auditedTextFiles) {
     $fullPath = Join-Path $repoRoot $relativePath
     if (-not (Test-Path $fullPath -PathType Leaf)) {
       continue
@@ -162,7 +186,8 @@ try {
   if ($failures.Count -gt 0) {
     $lines = @(
       'Public surface audit failed.',
-      'Policy: docs/repository-sanitization.md'
+      'Policy: docs/repository-sanitization.md',
+      'Checklist: docs/public-ready-checklist.md'
     ) + ($failures | ForEach-Object { "- $_" })
 
     throw ($lines -join [Environment]::NewLine)
@@ -170,6 +195,8 @@ try {
 
   Write-Host 'Public surface audit passed.'
   Write-Host 'Policy: docs/repository-sanitization.md'
+  Write-Host 'Checklist: docs/public-ready-checklist.md'
+  Write-Host "Audited tracked text files: $($auditedTextFiles.Count)"
 }
 finally {
   Pop-Location
