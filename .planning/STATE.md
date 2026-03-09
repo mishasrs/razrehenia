@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 1
 current_phase_name: Публичный GitHub и bootstrap
-current_plan: 3
-status: executing
-stopped_at: Completed 01-github-bootstrap-02-PLAN.md
-last_updated: "2026-03-09T13:56:00+03:00"
+current_plan: Verification
+status: human_needed
+stopped_at: Phase 01 awaiting human verification
+last_updated: "2026-03-09T16:05:00+03:00"
 last_activity: 2026-03-09
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Состояние проекта
@@ -31,23 +31,23 @@ progress:
 **Current Phase:** 1
 **Current Phase Name:** Публичный GitHub и bootstrap
 **Total Phases:** 5
-**Current Plan:** 3 of 3
+**Current Plan:** Verification
 **Total Plans in Phase:** 3
-**Status:** Executing
+**Status:** Awaiting human verification
 **Last Activity:** 2026-03-09
-**Last Activity Description:** Completed `01-02-PLAN.md`: added Russian bootstrap quickstart, dependency inventory, and QR runtime checks
-**Progress:** [███████░░░] 67%
+**Last Activity Description:** Completed `01-03-PLAN.md`; verifier requested a narrow live bootstrap/QR check in Google Apps Script
+**Progress:** [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 7 min
-- Total execution time: 14 min
+- Total plans completed: 3
+- Average duration: 11 min
+- Total execution time: 34 min
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-github-bootstrap | 2 | 14 min | 7 min |
+| 01-github-bootstrap | 3 | 34 min | 11 min |
 
 ## Decisions Made
 
@@ -61,6 +61,8 @@ progress:
 | 01-02 | `README.md` становится единым публичным quickstart для container-bound bootstrap | Новый maintainer входит в проект через один линейный happy path без поиска по репозиторию |
 | 01-02 | Telegram setup остаётся условным блоком после первого scan | Базовый bootstrap не зависит от bot token и role folders |
 | 01-02 | Bootstrap inventory разделяет maintainer-set и runtime-owned `Script Properties` | Служебные runtime keys не выглядят как ручные шаги настройки |
+| 01-03 | Public-ready proof оформлен как цепочка `README.md -> docs/repository-sanitization.md -> docs/public-ready-checklist.md -> scripts/check-public-surface.ps1` | Maintainer получает воспроизводимый путь проверки tracked surface без чтения всей кодовой базы |
+| 01-03 | Audit script проверяет обязательные tracked proof-артефакты, а не только regex-утечки | Checklist и automated proof не расходятся по покрытию public-ready surface |
 
 ## Blockers
 
@@ -69,6 +71,6 @@ progress:
 
 ## Session
 
-**Last Date:** 2026-03-09T13:56:00+03:00
-**Stopped At:** Completed 01-github-bootstrap-02-PLAN.md
-**Resume File:** .planning/phases/01-github-bootstrap/01-03-PLAN.md
+**Last Date:** 2026-03-09T16:05:00+03:00
+**Stopped At:** Phase 01 awaiting human verification
+**Resume File:** .planning/phases/01-github-bootstrap/01-VERIFICATION.md
