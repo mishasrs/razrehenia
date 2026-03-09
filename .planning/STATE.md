@@ -7,7 +7,7 @@ current_phase_name: Публичный GitHub и bootstrap
 current_plan: 3
 status: executing
 stopped_at: Completed 01-github-bootstrap-02-PLAN.md
-last_updated: "2026-03-09T11:08:27.520Z"
+last_updated: "2026-03-09T13:56:00+03:00"
 last_activity: 2026-03-09
 progress:
   total_phases: 5
@@ -31,24 +31,23 @@ progress:
 **Current Phase:** 1
 **Current Phase Name:** Публичный GitHub и bootstrap
 **Total Phases:** 5
-**Current Plan:** 3
+**Current Plan:** 3 of 3
 **Total Plans in Phase:** 3
-**Status:** Ready to execute
+**Status:** Executing
 **Last Activity:** 2026-03-09
-**Last Activity Description:** Completed `01-01-PLAN.md`: normalized the public clasp surface, documented sanitization policy, and added an automated public-surface audit
+**Last Activity Description:** Completed `01-02-PLAN.md`: added Russian bootstrap quickstart, dependency inventory, and QR runtime checks
 **Progress:** [███████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 4 min
-- Total execution time: 4 min
+- Total plans completed: 2
+- Average duration: 7 min
+- Total execution time: 14 min
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-github-bootstrap | 1 | 4 min | 4 min |
-| Phase 01-github-bootstrap P02 | 10 min | 2 tasks | 2 files |
+| 01-github-bootstrap | 2 | 14 min | 7 min |
 
 ## Decisions Made
 
@@ -59,9 +58,9 @@ progress:
 | Init | Следующий milestone идёт в порядке bootstrap -> access -> reliability -> performance -> verification | Такой порядок повторяет реальные архитектурные зависимости и снижает риск регрессий |
 | 01-01 | Рабочий `.clasp.json` остаётся только локальным operational binding; tracked surface опирается на `.clasp.example.json` | Это отделяет публичный template от реальной привязки maintainer и закрывает BOOT-01 |
 | 01-01 | Проверка public-ready состояния идёт по `git ls-files` и tracked текстовым файлам, а не по одному только `clasp push` surface | Proof покрывает docs и config, а не только upload-поверхность Apps Script |
-- [Phase 01-02]: README.md становится единым публичным quickstart для container-bound bootstrap
-- [Phase 01-02]: Telegram setup остаётся условным блоком после первого scan
-- [Phase 01-02]: Bootstrap inventory разделяет maintainer-set и runtime-owned Script Properties
+| 01-02 | `README.md` становится единым публичным quickstart для container-bound bootstrap | Новый maintainer входит в проект через один линейный happy path без поиска по репозиторию |
+| 01-02 | Telegram setup остаётся условным блоком после первого scan | Базовый bootstrap не зависит от bot token и role folders |
+| 01-02 | Bootstrap inventory разделяет maintainer-set и runtime-owned `Script Properties` | Служебные runtime keys не выглядят как ручные шаги настройки |
 
 ## Blockers
 
@@ -70,6 +69,6 @@ progress:
 
 ## Session
 
-**Last Date:** 2026-03-09T11:08:27.519Z
+**Last Date:** 2026-03-09T13:56:00+03:00
 **Stopped At:** Completed 01-github-bootstrap-02-PLAN.md
-**Resume File:** None
+**Resume File:** .planning/phases/01-github-bootstrap/01-03-PLAN.md
