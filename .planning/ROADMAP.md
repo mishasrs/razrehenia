@@ -10,7 +10,7 @@
 - Integer phases (1, 2, 3): planned milestone work
 - Decimal phases (2.1, 2.2): urgent insertions if they become necessary
 
-- [ ] **Phase 1: Публичный GitHub и bootstrap** - Санитизировать репозиторий и сделать восстановление окружения воспроизводимым
+- [x] **Phase 1: Публичный GitHub и bootstrap** - Санитизировать репозиторий и сделать восстановление окружения воспроизводимым
 - [ ] **Phase 2: Fail-closed интеграции и доступ** - Перевести конфигурацию, маршрутизацию и QR-policy в безопасный режим отказа
 - [ ] **Phase 3: Надёжность scan/sync и фоновых задач** - Убрать silent failure и закрепить корректный run-state/cursor/offset
 - [ ] **Phase 4: Производительность и квоты** - Снизить лишние чтения Drive/Sheets и стоимость массовых операций
@@ -29,9 +29,9 @@
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — закрепить sanitization репозитория, redacted config surface и automated audit public-ready surface
-- [ ] 01-02-PLAN.md — собрать русский quickstart и bootstrap inventory для Spreadsheet/App Script/Properties/Triggers
-- [ ] 01-03-PLAN.md — оформить public-ready checklist и связать его с automated proof отсутствия утечек
+- [x] 01-01-PLAN.md — закрепить sanitization репозитория, redacted config surface и automated audit public-ready surface
+- [x] 01-02-PLAN.md — собрать русский quickstart и bootstrap inventory для Spreadsheet/App Script/Properties/Triggers
+- [x] 01-03-PLAN.md — оформить public-ready checklist и связать его с automated proof отсутствия утечек
 
 ### Phase 2: Fail-closed интеграции и доступ
 **Goal:** Ошибки конфигурации и маршрутизации интеграций приводят к безопасному отказу с понятной диагностикой, а не к скрытому расширению доступа
@@ -102,7 +102,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Публичный GitHub и bootstrap | 3/3 | Human verification | 01-01, 01-02, 01-03 |
+| 1. Публичный GitHub и bootstrap | 3/3 | Complete | 2026-03-09 |
 | 2. Fail-closed интеграции и доступ | 0/3 | Not started | - |
 | 3. Надёжность scan/sync и фоновых задач | 0/4 | Not started | - |
 | 4. Производительность и квоты | 0/3 | Not started | - |
