@@ -4,24 +4,24 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 1
 current_phase_name: Публичный GitHub и bootstrap
-current_plan: Not started
-status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-03-09T09:24:52.270Z"
-last_activity: 2026-03-08
+current_plan: 2
+status: in_progress
+stopped_at: Completed 01-github-bootstrap-01-PLAN.md
+last_updated: "2026-03-09T10:29:23.938Z"
+last_activity: 2026-03-09
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 3
+  completed_plans: 1
+  percent: 33
 ---
 
-# Project State
+# Состояние проекта
 
-## Project Reference
+## Справка по проекту
 
-See: `.planning/PROJECT.md` (updated 2026-03-08)
+См.: `.planning/PROJECT.md` (updated 2026-03-08)
 
 **Core Value:** Оператор получает актуальный и надёжный реестр разрешений из Drive без ручной пересборки данных и без потери рабочих сценариев отправки
 **Current Focus:** Phase 1 - Публичный GitHub и bootstrap
@@ -31,23 +31,23 @@ See: `.planning/PROJECT.md` (updated 2026-03-08)
 **Current Phase:** 1
 **Current Phase Name:** Публичный GitHub и bootstrap
 **Total Phases:** 5
-**Current Plan:** Not started
+**Current Plan:** 2 of 3
 **Total Plans in Phase:** 3
-**Status:** Ready to plan
-**Last Activity:** 2026-03-08
-**Last Activity Description:** Project initialized; repository made public; baseline hardening and performance fixes prepared before phase planning
-**Progress:** [░░░░░░░░░░] 0%
+**Status:** In progress
+**Last Activity:** 2026-03-09
+**Last Activity Description:** Completed `01-01-PLAN.md`: normalized the public clasp surface, documented sanitization policy, and added an automated public-surface audit
+**Progress:** [███░░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: -
+- Total plans completed: 1
+- Average duration: 4 min
+- Total execution time: 4 min
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-github-bootstrap | 1 | 4 min | 4 min |
 
 ## Decisions Made
 
@@ -56,6 +56,8 @@ See: `.planning/PROJECT.md` (updated 2026-03-08)
 | Init | Сохраняем Apps Script как основной runtime | Миграция платформы не соответствует цели stabilisation milestone |
 | Init | Репозиторий работает как публичный GitHub-проект | Нужна прозрачная доработка без хранения live ids и секретов в Git |
 | Init | Следующий milestone идёт в порядке bootstrap -> access -> reliability -> performance -> verification | Такой порядок повторяет реальные архитектурные зависимости и снижает риск регрессий |
+| 01-01 | Рабочий `.clasp.json` остаётся только локальным operational binding; tracked surface опирается на `.clasp.example.json` | Это отделяет публичный template от реальной привязки maintainer и закрывает BOOT-01 |
+| 01-01 | Проверка public-ready состояния идёт по `git ls-files` и tracked текстовым файлам, а не по одному только `clasp push` surface | Proof покрывает docs и config, а не только upload-поверхность Apps Script |
 
 ## Blockers
 
@@ -64,6 +66,6 @@ See: `.planning/PROJECT.md` (updated 2026-03-08)
 
 ## Session
 
-**Last Date:** 2026-03-09T09:24:52.268Z
-**Stopped At:** Phase 1 context gathered
-**Resume File:** .planning/phases/01-github-bootstrap/01-CONTEXT.md
+**Last Date:** 2026-03-09T10:29:23.938Z
+**Stopped At:** Completed 01-github-bootstrap-01-PLAN.md
+**Resume File:** .planning/phases/01-github-bootstrap/01-02-PLAN.md
