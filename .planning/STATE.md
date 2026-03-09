@@ -4,17 +4,17 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 1
 current_phase_name: Публичный GitHub и bootstrap
-current_plan: 2
-status: in_progress
-stopped_at: Completed 01-github-bootstrap-01-PLAN.md
-last_updated: "2026-03-09T10:29:23.938Z"
+current_plan: 3
+status: executing
+stopped_at: Completed 01-github-bootstrap-02-PLAN.md
+last_updated: "2026-03-09T11:08:27.520Z"
 last_activity: 2026-03-09
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Состояние проекта
@@ -31,12 +31,12 @@ progress:
 **Current Phase:** 1
 **Current Phase Name:** Публичный GitHub и bootstrap
 **Total Phases:** 5
-**Current Plan:** 2 of 3
+**Current Plan:** 3
 **Total Plans in Phase:** 3
-**Status:** In progress
+**Status:** Ready to execute
 **Last Activity:** 2026-03-09
 **Last Activity Description:** Completed `01-01-PLAN.md`: normalized the public clasp surface, documented sanitization policy, and added an automated public-surface audit
-**Progress:** [███░░░░░░░] 33%
+**Progress:** [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ progress:
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-github-bootstrap | 1 | 4 min | 4 min |
+| Phase 01-github-bootstrap P02 | 10 min | 2 tasks | 2 files |
 
 ## Decisions Made
 
@@ -58,6 +59,9 @@ progress:
 | Init | Следующий milestone идёт в порядке bootstrap -> access -> reliability -> performance -> verification | Такой порядок повторяет реальные архитектурные зависимости и снижает риск регрессий |
 | 01-01 | Рабочий `.clasp.json` остаётся только локальным operational binding; tracked surface опирается на `.clasp.example.json` | Это отделяет публичный template от реальной привязки maintainer и закрывает BOOT-01 |
 | 01-01 | Проверка public-ready состояния идёт по `git ls-files` и tracked текстовым файлам, а не по одному только `clasp push` surface | Proof покрывает docs и config, а не только upload-поверхность Apps Script |
+- [Phase 01-02]: README.md становится единым публичным quickstart для container-bound bootstrap
+- [Phase 01-02]: Telegram setup остаётся условным блоком после первого scan
+- [Phase 01-02]: Bootstrap inventory разделяет maintainer-set и runtime-owned Script Properties
 
 ## Blockers
 
@@ -66,6 +70,6 @@ progress:
 
 ## Session
 
-**Last Date:** 2026-03-09T10:29:23.938Z
-**Stopped At:** Completed 01-github-bootstrap-01-PLAN.md
-**Resume File:** .planning/phases/01-github-bootstrap/01-02-PLAN.md
+**Last Date:** 2026-03-09T11:08:27.519Z
+**Stopped At:** Completed 01-github-bootstrap-02-PLAN.md
+**Resume File:** None

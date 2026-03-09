@@ -8,7 +8,7 @@
 ### Публичный репозиторий и bootstrap
 
 - [x] **BOOT-01**: Разработчик может привязать локальную копию репозитория к своему Apps Script/Spreadsheet через обезличенный пример конфигурации без публикации live `scriptId` и `parentId` в Git
-- [ ] **BOOT-02**: Maintainer может по русской инструкции восстановить обязательные `Script Properties`, нужные листы, advanced services и installable triggers без скрытых ручных шагов
+- [x] **BOOT-02**: Maintainer может по русской инструкции восстановить обязательные `Script Properties`, нужные листы, advanced services и installable triggers без скрытых ручных шагов
 - [x] **BOOT-03**: Публичный репозиторий хранит только обезличенные конфигурационные примеры и не содержит отслеживаемых live secrets, operational ids или привязок к production-окружению
 
 ### Безопасные интеграции
@@ -63,7 +63,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | BOOT-01 | Phase 1 | Complete |
-| BOOT-02 | Phase 1 | Pending |
+| BOOT-02 | Phase 1 | Complete |
 | BOOT-03 | Phase 1 | Complete |
 | SAFE-01 | Phase 2 | Pending |
 | SAFE-02 | Phase 2 | Pending |

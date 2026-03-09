@@ -102,7 +102,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Публичный GitHub и bootstrap | 1/3 | In Progress | 01-01 |
+| 1. Публичный GitHub и bootstrap | 2/3 | In Progress | 01-01, 01-02 |
 | 2. Fail-closed интеграции и доступ | 0/3 | Not started | - |
 | 3. Надёжность scan/sync и фоновых задач | 0/4 | Not started | - |
 | 4. Производительность и квоты | 0/3 | Not started | - |
