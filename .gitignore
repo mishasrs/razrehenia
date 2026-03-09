@@ -1,1 +1,2 @@
-.clasp.json
+# Local clasp binding is operational data and must stay out of Git.
+/.clasp.json

@@ -1,3 +1,4 @@
+# Push only Apps Script runtime sources and the tracked manifest.
 **/**
 !**/*.gs
 !**/*.html
